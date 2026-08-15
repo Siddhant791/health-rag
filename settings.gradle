@@ -5,5 +5,3 @@ pluginManagement {
     }
 }
 rootProject.name = 'medicalaibot'
-
-include 'untitled'

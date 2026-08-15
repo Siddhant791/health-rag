@@ -1,6 +1,14 @@
 spring:
   application:
     name: medicalaibot
+  datasource:
+    url: jdbc:postgresql://localhost:5432/medicalaibot
+    username: postgres
+    password: postgres
+  jpa:
+    hibernate:
+      ddl-auto: update
+
 app:
   storage:
     location: ${user.home}/medical-ai-storage/reports
