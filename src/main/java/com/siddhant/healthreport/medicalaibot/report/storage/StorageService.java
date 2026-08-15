@@ -6,5 +6,5 @@ import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 
 public interface StorageService {
-    StoredFile store(MultipartFile file) throws NoSuchAlgorithmException,IOException;
+    StoredFile store(MultipartFile file);
 }

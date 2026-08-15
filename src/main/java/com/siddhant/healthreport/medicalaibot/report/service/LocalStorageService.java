@@ -4,6 +4,7 @@ import com.siddhant.healthreport.medicalaibot.config.StorageConfiguration;
 import com.siddhant.healthreport.medicalaibot.report.storage.StorageService;
 import com.siddhant.healthreport.medicalaibot.report.storage.StoredFile;
 import com.siddhant.healthreport.medicalaibot.utils.FileUtils;
+import com.siddhant.healthreport.medicalaibot.utils.HexUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -34,7 +35,7 @@ public class LocalStorageService implements StorageService {
     }
 
     @Override
-    public StoredFile store(MultipartFile file) throws NoSuchAlgorithmException, IOException {
+    public StoredFile store(MultipartFile file) {
         // Extract original file name
         String originalFileName = file.getOriginalFilename();
 
@@ -50,32 +51,42 @@ public class LocalStorageService implements StorageService {
         // Final destination where file needs to be stored
         destination = destination.normalize();
 
+        byte[] hash;
+
         if (!destination.startsWith(storagePath)) {
             throw new RuntimeException("Invalid storage Path");
         }
 
-        // Let's read the file now and store it in the destination
-        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        try {
+            // Let's read the file now and store it in the destination
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
 
-        // Output stream
-        OutputStream outputStream = Files.newOutputStream(destination);
+            try (OutputStream outputStream = Files.newOutputStream(destination);
+                 InputStream inputFileStream = file.getInputStream()) {
+                DigestInputStream digestInputStream = new DigestInputStream(inputFileStream, digest);
 
-        InputStream inputFileStream = file.getInputStream();
+                // 8KB of buffer
+                byte[] buffer = new byte[8192];
 
-        DigestInputStream digestInputStream = new DigestInputStream(inputFileStream,digest);
+                int byteRead;
 
-        // 8KB of buffer
-        byte[] buffer = new byte[8192];
+                while ((byteRead = digestInputStream.read(buffer)) != -1) {
+                    outputStream.write(buffer, 0, byteRead);
+                }
+            }
 
-        int byteRead;
-
-        while((byteRead = digestInputStream.read(buffer)) != -1){
-            outputStream.write(buffer,0,byteRead);
+            // This is to close the digest
+            hash = digest.digest();
+        } catch (IOException | NoSuchAlgorithmException exception) {
+            throw new RuntimeException("Unable to store file", exception);
         }
 
-        // This is to close the digest
-        digest.digest();
-
-        return null;
+        return StoredFile.builder()
+                .contentType(file.getContentType())
+                .fileSize(file.getSize())
+                .originalFileName(originalFileName)
+                .storagePath(destination.toString())
+                .sha256(HexUtils.bytesToHex(hash))
+                .build();
     }
 }
