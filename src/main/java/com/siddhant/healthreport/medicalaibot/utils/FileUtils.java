@@ -9,6 +9,6 @@ public class FileUtils {
         if(fileName == null || fileName.lastIndexOf(".") == -1) {
             return "";
         }
-        return fileName.substring(fileName.lastIndexOf(".") + 1);
+        return fileName.substring(fileName.lastIndexOf("."));
     }
 }
