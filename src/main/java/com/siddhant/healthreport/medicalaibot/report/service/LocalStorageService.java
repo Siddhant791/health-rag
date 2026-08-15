@@ -73,6 +73,8 @@ public class LocalStorageService implements StorageService {
             outputStream.write(buffer,0,byteRead);
         }
 
+        // This is to close the digest
+        digest.digest();
 
         return null;
     }
