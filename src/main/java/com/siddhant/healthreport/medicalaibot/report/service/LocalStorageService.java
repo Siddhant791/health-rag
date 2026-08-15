@@ -84,6 +84,7 @@ public class LocalStorageService implements StorageService {
         return StoredFile.builder()
                 .contentType(file.getContentType())
                 .fileSize(file.getSize())
+                .storedFileName(storedFileName)
                 .originalFileName(originalFileName)
                 .storagePath(destination.toString())
                 .sha256(HexUtils.bytesToHex(hash))
